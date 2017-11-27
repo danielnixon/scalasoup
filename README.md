@@ -250,7 +250,7 @@ But what if we don't know the parent state of the current element (or if the cur
 // Given some element without a parent (a document element in this case).
 val document: Document[ParentState.NoParent] = ScalaSoup.parse("<div></div>")
 
-// Select all div elements in the document. We (humans) know that the returned list will only include elements with parents, but we haven't presuaded the compiler.
+// Select all div elements in the document. We (humans) know that the returned list will only include elements with parents, but we haven't persuaded the compiler.
 val results: List[Element[_]] = document.select("div")
 ```
 
