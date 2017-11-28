@@ -27,12 +27,12 @@ Usage
 -----
 
 Add the dependency to your `build.sbt`:
-```
+```scala
 libraryDependencies += "org.danielnixon" %% "scalasoup" % "0.1.0-SNAPSHOT"
 ```
 
 Then import the `scalasoup` package and use the `ScalaSoup` object as your entrypoint everywhere you would have used `Jsoup`.
-```
+```scala
 import org.danielnixon.scalasoup._
 
 ScalaSoup.parse(...)
@@ -43,7 +43,8 @@ Example
 
 Let's translate the [Wikipedia example from the JSoup homepage](https://jsoup.org/).
 The first thing to note is that JSoup's built-in http client is impure and blocking, so ScalaSoup doesn't expose it. You probably already use a library like [play-ws](https://github.com/playframework/play-ws) or [http4s](http://http4s.org/v0.17/client/). We encourage you to keep using whatever http library you're already using. For this example we'll use http4s. 
-```
+
+```scala
 import org.http4s.client.blaze._
 import org.danielnixon.scalasoup._
 
@@ -74,7 +75,7 @@ So what do we do instead? We could create a copy of an element, make our changes
 
 This approach is actually possible in vanilla JSoup. Before moving on, let's see what that might look like:
 
-```
+```scala
 def withAddClass(element: org.jsoup.nodes.Element, className: String): org.jsoup.nodes.Element = {
   val updatedElement = element.clone
   updatedElement.addClass(className)
@@ -97,7 +98,7 @@ This works but it has a few flaws.
 
 Let's see the same approach using ScalaSoup:
 
-```
+```scala
 val originalElement = Element("div")
 val updatedElement = originalElement.withAddClass("foo")
 
@@ -123,13 +124,13 @@ One limitation of the `withFoo` approach (above) is that you incur a performance
 It'd be nice if we could _batch_ our modifications and incur the cloning penalty only once per batch of modifications. This is exactly what ScalaSoup's mutation DSL gives us. For the curious, the mutation DSL is implemented using a [Cats Free Monad](https://typelevel.org/cats/datatypes/freemonad.html).
 
 Note that in order to use the DSL you need to add an additional dependency to your `build.sbt`:
-```
+```scala
 libraryDependencies += "org.danielnixon" %% "scalasoup-dsl" % "0.1.0-SNAPSHOT"
 ```
 
 Here's an example that makes two changes to a document, incurring the cloning cost only once.
 
-```
+```scala
 import org.danielnixon.scalasoup._
 import org.danielnixon.scalasoup.dsl._
 
@@ -155,7 +156,7 @@ Some things to observe:
 
 Here's an example that removes `target` attributes from _all_ `a` tags. Note the use of Cats's `foldMapM` (and the additional `cats` import).
 
-```
+```scala
 import cats.implicits._
 import org.danielnixon.scalasoup._
 import org.danielnixon.scalasoup.dsl._
@@ -172,7 +173,7 @@ val result = doc.withModifications(modifications)
 
 Here's an example that builds one DSL program based on another:
 
-```
+```scala
 val selectLinksProgram = for {
   document <- modifyDocument
 } yield document.selectChildren("a")
@@ -193,7 +194,7 @@ A number of methods in JSoup throw an exception if the element on which they are
 
 Here's an example:
 
-```
+```scala
 val doc = org.jsoup.Jsoup.parse("")
 // Throws IllegalArgumentException because you can't remove something from its parent if it _has no_ parent.
 // This should throw an IllegalStateException instead, but what matters is that it throws at all.
@@ -202,7 +203,7 @@ doc.remove()
 
 Let's try that in ScalaSoup:
 
-```
+```scala
 val doc = ScalaSoup.parse("")
 doc.remove
 ```
@@ -233,7 +234,7 @@ This raises a question. What should the ParentState of the returned list be?
 
 If the current element is known to have a parent, then we can confidently return `List[Element[ParentState.HasParent]]`. And this is actually how ScalaSoup works. For example:
 
-```
+```scala
 // Given some element with a parent (a `body` element in this case).
 val element: Element[ParentState.HasParent] = ScalaSoup.parse("<div></div>").body.get
 
@@ -243,7 +244,7 @@ val results: List[Element[ParentState.HasParent]] = element.select("*")
 
 But what if we don't know the parent state of the current element (or if the current element is known to not have a parent)? In that case we cannot know the parent state of the returned list. For example:
 
-```
+```scala
 // Given some element without a parent (a document element in this case).
 val document: Document[ParentState.NoParent] = ScalaSoup.parse("<div></div>")
 
@@ -253,7 +254,7 @@ val results: List[Element[_]] = document.select("div")
 
 There are a couple of ways we can work around this. One is to ensure we call the method (`select` in these examples) on something we know has a parent. For example:
 
-```
+```scala
 val document: Document[ParentState.NoParent] = ScalaSoup.parse("<div></div>")
 
 // We go via the body element, which is known to have a parent.
@@ -264,7 +265,7 @@ Another, perhaps nicer, solution is to use one of the new methods introduced in 
 
 Instead of `select` we can call `selectChildren`, which is equivalent in all respects except that it will never include the current element, allowing us to know with confidence that the returned elements all have a parent.
 
-```
+```scala
 val document: Document[ParentState.NoParent] = ScalaSoup.parse("<div></div>")
 
 // Using `selectChildren`, we know that all the results will have a parent.
@@ -277,7 +278,7 @@ The second issue is raised by the `parent`, `parents` and `parentNode` methods. 
 
 This will be annoying in cases like this:
 
-```
+```scala
 val modifications = for {
   doc        <- modifyDocument
   link       =  doc.selectFirstChild("a")
@@ -301,7 +302,7 @@ There are a couple of workarounds:
 
 The bluntest (and least safe) solution is to just resort to using `asInstanceOf`:
 
-```
+```scala
 val modifications = for {
   doc        <- modifyDocument
   link       =  doc.selectFirstChild("a")
@@ -312,7 +313,7 @@ val modifications = for {
 
 A safer solution is to rewrite our program so that it no longer has to work its way back _up_ the tree of elements. In this example let's rewrite using the [`has` pseudo-class](https://developer.mozilla.org/en-US/docs/Web/CSS/:has), which is supported by JSoup:
 
-```
+```scala
 val modifications = for {
   doc        <- modifyDocument
   linkParent =  doc.selectFirstChild("div:has(a)")
@@ -325,7 +326,7 @@ Pattern matching
 
 Consider the following (flawed) JSoup program:
 
-```
+```scala
 import scala.collection.JavaConverters._
 
 val doc: org.jsoup.nodes.Document = ???
@@ -340,7 +341,7 @@ Can you see the problem? The pattern match is not exhaustive. If any of the chil
 
 Let's re-write our JSoup program using ScalaSoup:
 
-```
+```scala
 val doc: Document[_] = ???
 
 val foo = doc.childNodes.map {
@@ -366,13 +367,13 @@ Compile-time validation of regular expressions and CSS selectors
 
 Consider this JSoup program that finds elements matching a regex (`(foo)` in this case):
 
-```
+```scala
 val matchingElements = org.jsoup.Jsoup.parse("<div>foo</div>").getElementsMatchingText("(foo)")
 ```
 
 But what if we forgot to close that capturing group (`(foo`)?
 
-```
+```scala
 val matchingElements = org.jsoup.Jsoup.parse("<div>foo</div>").getElementsMatchingText("(foo")
 ```
 
@@ -380,7 +381,7 @@ We get a runtime exception: `java.lang.IllegalArgumentException: Pattern syntax 
 
 Let's see the equivalent in ScalaSoup:
 
-```
+```scala
 val result = ScalaSoup.parse("<div>foo</div>").elementsMatchingText("(foo")
 ```
 
@@ -402,19 +403,19 @@ What about CSS selectors?
 
 Take this Jsoup example (note the unclosed `[`):
 
-```
+```scala
 val result = org.jsoup.Jsoup.parse("<div>foo</div>").select("a[href")
 ```
 
 What happens? Another runtime exception:
 
-```
+```scala
 org.jsoup.select.Selector$SelectorParseException: Did not find balanced marker at 'href'
 ```
 
 And what about ScalaSoup?
 
-```
+```scala
 val result = ScalaSoup.parse("<div>foo</div>").select("a[href")
 ```
 
@@ -432,7 +433,7 @@ These compile-time checks are courtesy of the excellent [refined](https://github
 
 There is one big limitation: these checks rely on the regex and CSS selectors being baked in _at compile time_. For example, this won't compile:
 
-```
+```scala
 val someSelectorFromTheOutsideWorld: String = ???
 val result = ScalaSoup.parse("<div>foo</div>").select(someSelectorFromTheOutsideWorld)
 ```
@@ -449,7 +450,7 @@ Here's the compiler error:
 
 ScalaSoup provides a `fromString` method for these cases. It returns an `Either` containing either an error message or a valid selector:
 
-```
+```scala
 val someSelectorFromTheOutsideWorld: String = ???
 val selectorOrError: Either[String, CssSelectorString] = CssSelectorString.fromString(someSelectorFromTheOutsideWorld)
 
@@ -461,7 +462,7 @@ selectorOrError match {
 
 If you're feeling reckless, you can use `fromStringUnsafe`:
 
-```
+```scala
 val someSelectorFromTheOutsideWorld: String = ???
 // This will throw if the selector doesn't parse.
 val validSelector: CssSelectorString = CssSelectorString.fromStringUnsafe(someSelectorFromTheOutsideWorld)
@@ -477,7 +478,7 @@ Other Differences Between JSoup and ScalaSoup
 ### No null references ###
 JSoup really likes to return null references. For example:
 
-```
+```scala
 val doc = org.jsoup.Jsoup.parse("<div></div>")
 val element: org.jsoup.nodes.Element = doc.selectFirst("span") // Returns null
 val spanHtml = element.html // Throws java.lang.NullPointerException
@@ -485,7 +486,7 @@ val spanHtml = element.html // Throws java.lang.NullPointerException
 
 In ScalaSoup, `selectFirst` is more honest: it returns an `Option[Element]`.
 
-```
+```scala
 val doc = ScalaSoup.parse("<div></div>")
 val maybeElement: Option[Element[_]] = doc.selectFirst("span")
 
@@ -505,7 +506,7 @@ JSoup often returns an instance of its `Elements` class (a subclass of `ArrayLis
 
 Consider this method from JSoup's `Elements` class:
 
-```
+```java
 public List<FormElement> forms() {
   ArrayList<FormElement> forms = new ArrayList<>();
   for (Element el: this)
@@ -517,14 +518,14 @@ public List<FormElement> forms() {
 
 Usage might look something like this:
 
-```
+```scala
 val document = org.jsoup.Jsoup.parse(...)
 val forms = document.getAllElements.forms
 ```
 
 In ScalaSoup we don't need this, we can simply use `collect`:
 
-```
+```scala
 val forms = document.allChildren.collect({case f: FormElement[ParentState.HasParent] => f})
 ```
 
@@ -532,7 +533,7 @@ val forms = document.allChildren.collect({case f: FormElement[ParentState.HasPar
 
 Consider this JSoup program:
 
-```
+```scala
 val doc1 = org.jsoup.Jsoup.parse("<span></span>")
 val doc2 = org.jsoup.Jsoup.parse("<div></div>")
 
@@ -543,7 +544,7 @@ With one call to `replaceWith`, we've managed to mutate both doc2 _and_ doc1. Th
 
 Let's rewrite this in ScalaSoup:
 
-```
+```scala
 val doc1 = ScalaSoup.parse("<span></span>")
 val doc2 = ScalaSoup.parse("<div></div>")
 
