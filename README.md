@@ -204,19 +204,16 @@ Let's try that in ScalaSoup:
 
 ```
 val doc = ScalaSoup.parse("")
-doc.remove()
+doc.remove
 ```
 
 This time, the invalid program _won't even compile_:
 
 ```
-[error] Foo.scala:12:15: not enough arguments for method remove: (implicit ev: org.danielnixon.scalasoup.ParentState.NoParent =:= org.danielnixon.scalasoup.ParentState.HasParent)org.danielnixon.scalasoup.impl.Modification[Unit].
-[error] Unspecified value parameter ev.
-[error]     doc.remove()
-[error]               ^
+[error] Foo.scala:12:9: Cannot prove that this node has a parent. You can only call this method on a node with a parent.
+[error]     doc.remove
+[error] 
 ```
-
-That error message is somewhat impenetrable so it probably warrants some brief discussion.
 
 ScalaSoup introduces the concept of a `ParentState` [phantom type](https://blog.codecentric.de/en/2016/02/phantom-types-scala/). All `Nodes` (including `Elements`, `Documents`, etc) have a `ParentState` type parameter, which tells us _at compile time_ whether a node has a parent or not. All the methods that would throw in JSoup (like `remove`) are constrained such that you can _only_ call them on nodes that have a parent. We've eliminated an entire class of runtime exceptions!
 

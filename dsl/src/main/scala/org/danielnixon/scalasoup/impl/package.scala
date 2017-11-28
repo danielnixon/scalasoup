@@ -23,27 +23,27 @@ package object impl {
 
     def setBaseUri(baseUri: String): Modification[Unit] = modification(node, _.setBaseUri(baseUri))
 
-    def remove(implicit ev: B =:= ParentState.HasParent): Modification[Unit] = modification(node, _.remove())
+    def remove(implicit ev: HasParent[B]): Modification[Unit] = modification(node, _.remove())
 
-    def before(html: String)(implicit ev: B =:= ParentState.HasParent): Modification[Unit] =
+    def before(html: String)(implicit ev: HasParent[B]): Modification[Unit] =
       modification(node, _.before(html))
 
-    def before(in: Node[_ <: ParentState])(implicit ev: B =:= ParentState.HasParent): Modification[Unit] =
+    def before(in: Node[_ <: ParentState])(implicit ev: HasParent[B]): Modification[Unit] =
       modification(node, _.before(in))
 
-    def after(html: String)(implicit ev: B =:= ParentState.HasParent): Modification[Unit] =
+    def after(html: String)(implicit ev: HasParent[B]): Modification[Unit] =
       modification(node, _.after(html))
 
-    def after(in: Node[_ <: ParentState])(implicit ev: B =:= ParentState.HasParent): Modification[Unit] =
+    def after(in: Node[_ <: ParentState])(implicit ev: HasParent[B]): Modification[Unit] =
       modification(node, _.after(in))
 
-    def wrap(html: String)(implicit ev: B =:= ParentState.HasParent): Modification[Unit] =
+    def wrap(html: String)(implicit ev: HasParent[B]): Modification[Unit] =
       modification(node, _.wrap(html))
 
-    def unwrap(implicit ev: B =:= ParentState.HasParent): Modification[Option[Node[ParentState.HasParent]]] =
+    def unwrap(implicit ev: HasParent[B]): Modification[Option[Node[ParentState.HasParent]]] =
       modification(node, _.unwrap())
 
-    def replaceWith(in: Node[_ <: ParentState])(implicit ev: B =:= ParentState.HasParent): Modification[Unit] =
+    def replaceWith(in: Node[_ <: ParentState])(implicit ev: HasParent[B]): Modification[Unit] =
       modification(node, _.replaceWith(in))
   }
 

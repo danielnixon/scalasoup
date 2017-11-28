@@ -57,16 +57,16 @@ sealed abstract class Node[A <: ParentState] private[scalasoup](private[scalasou
 
   override def ownerDocument: Option[Document[ParentState.NoParent]] = Option(underlying.ownerDocument).map(Document.fromUnderlying)
 
-  def siblingNodes(implicit ev: A =:= ParentState.HasParent): List[Node[A]] =
+  def siblingNodes(implicit ev: HasParent[A]): List[Node[A]] =
     underlying.siblingNodes.asScala.toList.map(Node.fromUnderlying[A])
 
-  def nextSibling(implicit ev: A =:= ParentState.HasParent): Option[Node[A]] =
+  def nextSibling(implicit ev: HasParent[A]): Option[Node[A]] =
     Option(underlying.nextSibling).map(Node.fromUnderlying)
 
-  def previousSibling(implicit ev: A =:= ParentState.HasParent): Option[Node[A]] =
+  def previousSibling(implicit ev: HasParent[A]): Option[Node[A]] =
     Option(underlying.previousSibling).map(Node.fromUnderlying)
 
-  def siblingIndex(implicit ev: A =:= ParentState.HasParent): Int = underlying.siblingIndex
+  def siblingIndex(implicit ev: HasParent[A]): Int = underlying.siblingIndex
 
   // TODO traverse and filter
 
@@ -112,28 +112,28 @@ object Node {
 
     def setBaseUri(baseUri: String): Unit = node.underlying.setBaseUri(baseUri)
 
-    def remove()(implicit ev: A =:= ParentState.HasParent): Unit = node.underlying.remove()
+    def remove()(implicit ev: HasParent[A]): Unit = node.underlying.remove()
 
-    def before(html: String)(implicit ev: A =:= ParentState.HasParent): Unit = { node.underlying.before(html); () }
+    def before(html: String)(implicit ev: HasParent[A]): Unit = { node.underlying.before(html); () }
 
-    def before(node: Node[_ <: ParentState])(implicit ev: A =:= ParentState.HasParent): Unit = {
+    def before(node: Node[_ <: ParentState])(implicit ev: HasParent[A]): Unit = {
       node.underlying.before(node.underlying.clone)
       ()
     }
 
-    def after(html: String)(implicit ev: A =:= ParentState.HasParent): Unit = { node.underlying.after(html); () }
+    def after(html: String)(implicit ev: HasParent[A]): Unit = { node.underlying.after(html); () }
 
-    def after(n: Node[_ <: ParentState])(implicit ev: A =:= ParentState.HasParent): Unit = {
+    def after(n: Node[_ <: ParentState])(implicit ev: HasParent[A]): Unit = {
       node.underlying.after(n.underlying.clone)
       ()
     }
 
-    def wrap(html: String)(implicit ev: A =:= ParentState.HasParent): Unit = { node.underlying.wrap(html); () }
+    def wrap(html: String)(implicit ev: HasParent[A]): Unit = { node.underlying.wrap(html); () }
 
-    def unwrap()(implicit ev: A =:= ParentState.HasParent): Option[Node[ParentState.HasParent]] =
+    def unwrap()(implicit ev: HasParent[A]): Option[Node[ParentState.HasParent]] =
       Option(node.underlying.unwrap()).map(Node.fromUnderlying)
 
-    def replaceWith(in: Node[_ <: ParentState])(implicit ev: A =:= ParentState.HasParent): Unit =
+    def replaceWith(in: Node[_ <: ParentState])(implicit ev: HasParent[A]): Unit =
       node.underlying.replaceWith(in.underlying.clone)
   }
 }
@@ -325,21 +325,21 @@ sealed class Element[A <: ParentState] private[scalasoup](private[scalasoup] ove
 
   def cssSelector: CssSelectorString = CssSelectorString.fromStringUnsafe(underlying.cssSelector)
 
-  def siblingElements(implicit ev: A =:= ParentState.HasParent): List[Element[A]] =
+  def siblingElements(implicit ev: HasParent[A]): List[Element[A]] =
     convertList(underlying.siblingElements)
 
-  def nextElementSibling(implicit ev: A =:= ParentState.HasParent): Option[Element[A]] =
+  def nextElementSibling(implicit ev: HasParent[A]): Option[Element[A]] =
     convertOption(underlying.nextElementSibling)
 
-  def previousElementSibling(implicit ev: A =:= ParentState.HasParent): Option[Element[A]] =
+  def previousElementSibling(implicit ev: HasParent[A]): Option[Element[A]] =
     convertOption(underlying.previousElementSibling)
 
-  def firstElementSibling(implicit ev: A =:= ParentState.HasParent): Option[Element[A]] =
+  def firstElementSibling(implicit ev: HasParent[A]): Option[Element[A]] =
     convertOption(underlying.firstElementSibling)
 
-  def elementSiblingIndex(implicit ev: A =:= ParentState.HasParent): Int = underlying.elementSiblingIndex
+  def elementSiblingIndex(implicit ev: HasParent[A]): Int = underlying.elementSiblingIndex
 
-  def lastElementSibling(implicit ev: A =:= ParentState.HasParent): Option[Element[A]] =
+  def lastElementSibling(implicit ev: HasParent[A]): Option[Element[A]] =
     convertOption(underlying.lastElementSibling)
 
   def text: String = underlying.text

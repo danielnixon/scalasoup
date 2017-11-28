@@ -3,6 +3,7 @@ package org.danielnixon
 import org.danielnixon.scalasoup.Element.{HasParentElement, UnknownParentElement}
 import org.danielnixon.scalasoup.refined.CssSelectorValidate.CssSelector
 
+import scala.annotation.implicitNotFound
 import scala.language.implicitConversions
 
 package object scalasoup extends RefinedSupport {
@@ -11,6 +12,9 @@ package object scalasoup extends RefinedSupport {
 
   implicit def elementToUnknownParent(element: Element[_ <: ParentState]): UnknownParentElement =
     new UnknownParentElement(element)
+
+  @implicitNotFound("""Cannot prove that this node has a parent. You can only call this method on a node with a parent.""")
+  type HasParent[A <: ParentState] = A =:= ParentState.HasParent
 }
 
 /**
