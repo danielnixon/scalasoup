@@ -1,4 +1,4 @@
-ScalaSoup
+ScalaSoup [![Build Status](https://travis-ci.org/danielnixon/scalasoup.svg?branch=master)](https://travis-ci.org/danielnixon/scalasoup)
 =========
 
 A pure, typeful, idiomatic Scala wrapper around [JSoup](https://jsoup.org/).
