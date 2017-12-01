@@ -563,12 +563,11 @@ Future Work
 -----------
 
 1. Publish to Sonatype.
-2. Set up Travis CI.
-3. More tests.
-4. Improve this readme.
-5. Copy JavaDoc from JSoup?
-6. Use refined for URLs.
-7. Improve the DSL.
+2. More tests.
+3. Improve this readme.
+4. Copy JavaDoc from JSoup?
+5. Use refined for URLs.
+6. Improve the DSL.
 
 License
 -------
