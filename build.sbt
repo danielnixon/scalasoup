@@ -5,6 +5,10 @@ val commonSettings = Seq(
   crossScalaVersions := Seq("2.11.12", "2.12.4"),
   version            := "0.1.0-SNAPSHOT",
   // TODO https://tpolecat.github.io/2017/04/25/scalac-flags.html
+  scalacOptions      := Seq(
+    "-deprecation",
+    "-Xfatal-warnings"
+  ),
   libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % "3.0.4" % Test
   ),
@@ -21,19 +25,19 @@ val commonSettings = Seq(
     Wart.ExplicitImplicitTypes,
     Wart.FinalCaseClass,
     Wart.FinalVal,
-//    Wart.ImplicitConversion,
-//    Wart.ImplicitParameter,
+    //    Wart.ImplicitConversion,
+    //    Wart.ImplicitParameter,
     Wart.IsInstanceOf,
     Wart.JavaConversions,
     Wart.JavaSerializable,
     Wart.LeakingSealed,
     Wart.MutableDataStructures,
-//    Wart.NonUnitStatements,
-//    Wart.Nothing,
+    //    Wart.NonUnitStatements,
+    //    Wart.Nothing,
     Wart.Null,
     Wart.Option2Iterable,
     Wart.OptionPartial,
-//    Wart.Overloading,
+    //    Wart.Overloading,
     Wart.Product,
     Wart.PublicInference,
     Wart.Recursion,
@@ -59,8 +63,8 @@ lazy val core = (project in file("core")).
     name := "scalasoup",
     libraryDependencies ++= Seq(
       "org.jsoup"      %  "jsoup"                 % "1.11.2",
-      "eu.timepit"     %% "refined"               % "0.8.4",
-      "org.http4s"     %% "http4s-blaze-client"   % "0.18.0-M5" % Test,
+      "eu.timepit"     %% "refined"               % "0.8.5",
+      "org.http4s"     %% "http4s-blaze-client"   % "0.18.0-M7" % Test,
       "org.scalacheck" %% "scalacheck"            % "1.13.5"    % Test
     )
   )
@@ -70,8 +74,8 @@ lazy val dsl = (project in file("dsl")).
   settings(
     name := "scalasoup-dsl",
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core"    % "1.0.0-RC1",
-      "org.typelevel" %% "cats-free"    % "1.0.0-RC1"
+      "org.typelevel" %% "cats-core"    % "1.0.0",
+      "org.typelevel" %% "cats-free"    % "1.0.0"
     )
   ).
   dependsOn(core)

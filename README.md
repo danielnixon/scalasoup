@@ -48,7 +48,7 @@ The first thing to note is that JSoup's built-in http client is impure and block
 import org.http4s.client.blaze._
 import org.danielnixon.scalasoup._
 
-val httpClient = FollowRedirect(3)(PooledHttp1Client[IO]())
+val httpClient = FollowRedirect[IO](maxRedirects = 3)(Http1Client[IO]().unsafeRunSync())
 val uri = "https://en.wikipedia.org/"
 
 val task = httpClient.expect[String](uri) map { html =>

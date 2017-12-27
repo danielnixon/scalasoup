@@ -33,7 +33,7 @@ class ElementSpec extends FlatSpec with Matchers {
   "The Wikipedia readme example" should "compile" in {
     import org.http4s.client.blaze._
 
-    val httpClient = FollowRedirect(3)(PooledHttp1Client[IO]())
+    val httpClient = FollowRedirect[IO](maxRedirects = 3)(Http1Client[IO]().unsafeRunSync())
     val uri = "https://en.wikipedia.org/"
 
     val task = httpClient.expect[String](uri).map { html =>
